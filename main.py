@@ -22,6 +22,10 @@ def main() -> None:
     dest = output_path()
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     shutil.copyfile(SOURCE, dest)
+    # Sanity check: the copied file must be identical in size to the source,
+    # so a truncated copy can never slip through silently.
+    if os.path.getsize(dest) != os.path.getsize(SOURCE):
+        raise SystemExit("copy verification failed: size mismatch")
 
 
 if __name__ == "__main__":
