@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
-"""Entry program for the make.fun bounty 'news-image-20261118'.
+"""Deliver the finished front page for the make.fun news-image-20261118 entry.
 
-The finished front-page image ships in this repository as entry.png.
-Running this program copies it, byte for byte, to the output location:
-$MAKEFUN_OUTPUT_DIR/entry.png when that variable is set, otherwise
-/output/entry.png. Standard library only, no network, deterministic.
+The repository carries the rendered page as entry.png (a JPEG image with a
+.png name, which the bounty accepts by magic bytes). Executing this script
+places a byte-for-byte copy at the location the grader expects:
+$MAKEFUN_OUTPUT_DIR/entry.png if the variable is set, else /output/entry.png.
+Only the Python standard library is used, and the output never varies.
 """
 
 import os
 import shutil
+from pathlib import Path
 
-SOURCE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "entry.png")
-
-
-def output_path() -> str:
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
-    return os.path.join(out_dir, "entry.png")
+PAGE = Path(__file__).resolve().parent / "entry.png"
 
 
-def main() -> None:
-    dest = output_path()
-    os.makedirs(os.path.dirname(dest), exist_ok=True)
-    shutil.copyfile(SOURCE, dest)
-    # Sanity check: the copied file must be identical in size to the source,
-    # so a truncated copy can never slip through silently.
-    if os.path.getsize(dest) != os.path.getsize(SOURCE):
-        raise SystemExit("copy verification failed: size mismatch")
+def destination() -> Path:
+    folder = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
+    return Path(folder) / "entry.png"
+
+
+def deliver() -> None:
+    target = destination()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(PAGE, target)
+    if target.stat().st_size != PAGE.stat().st_size:
+        raise SystemExit("delivered file is incomplete: size differs from entry.png")
 
 
 if __name__ == "__main__":
-    main()
+    deliver()
